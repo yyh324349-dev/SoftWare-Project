@@ -8,6 +8,11 @@ const router = Router();
 // GET /api/courses/:courseId/syllabus - 获取课程大纲
 router.get('/:courseId/syllabus', (req: AuthRequest, res: Response) => {
   const { courseId } = req.params;
+  const id = Number(courseId);
+  if (!Number.isInteger(id) || id <= 0) {
+    res.status(400).json({ error: '无效的课程 ID' });
+    return;
+  }
 
   const course = db.prepare('SELECT * FROM courses WHERE id = ?').get(courseId) as Record<string, unknown> | undefined;
   if (!course) {
@@ -59,6 +64,11 @@ router.get('/:courseId/syllabus', (req: AuthRequest, res: Response) => {
 // POST /api/courses/:courseId/syllabus/refresh - 重新生成大纲
 router.post('/:courseId/syllabus/refresh', async (req: AuthRequest, res: Response) => {
   const { courseId } = req.params;
+  const id = Number(courseId);
+  if (!Number.isInteger(id) || id <= 0) {
+    res.status(400).json({ error: '无效的课程 ID' });
+    return;
+  }
 
   const course = db.prepare('SELECT * FROM courses WHERE id = ?').get(courseId) as Record<string, unknown> | undefined;
   if (!course) {

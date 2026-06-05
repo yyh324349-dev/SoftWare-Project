@@ -47,6 +47,11 @@ router.get('/', (_req: AuthRequest, res: Response) => {
 // GET /api/courses/:id - 获取单个课程详情
 router.get('/:id', (req: AuthRequest, res: Response) => {
   const { id } = req.params;
+  const courseId = Number(id);
+  if (!Number.isInteger(courseId) || courseId <= 0) {
+    res.status(400).json({ error: '无效的课程 ID' });
+    return;
+  }
   const course = db.prepare('SELECT * FROM courses WHERE id = ?').get(id) as Record<string, unknown> | undefined;
 
   if (!course) {
@@ -150,6 +155,11 @@ router.post('/', async (req: AuthRequest, res: Response) => {
 // DELETE /api/courses/:id - 删除课程
 router.delete('/:id', (req: AuthRequest, res: Response) => {
   const { id } = req.params;
+  const courseId = Number(id);
+  if (!Number.isInteger(courseId) || courseId <= 0) {
+    res.status(400).json({ error: '无效的课程 ID' });
+    return;
+  }
 
   const existing = db.prepare('SELECT id FROM courses WHERE id = ?').get(id);
   if (!existing) {

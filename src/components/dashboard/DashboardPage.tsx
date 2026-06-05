@@ -1,7 +1,57 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { get } from '@/lib/api';
+
+interface DashboardStats {
+  activeCourses: number;
+  overallProgress: number;
+  pendingChapters: number;
+  certificates: number;
+}
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const [stats, setStats] = useState<DashboardStats>({
+    activeCourses: 0,
+    overallProgress: 0,
+    pendingChapters: 0,
+    certificates: 0,
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        // 获取课程列表
+        const coursesData = await get<{ courses: Array<{ id: number; status: string; progress: number; chapters: number; completedChapters: number }> }>('/courses');
+        const courses = coursesData.courses || [];
+
+        // 获取证书数据
+        const certsData = await get<{ certificates: Array<{ locked: boolean }> }>('/certificates');
+        const certs = certsData.certificates || [];
+
+        // 计算统计数据
+        const activeCourses = courses.filter(c => c.status === 'active').length;
+        const totalChapters = courses.reduce((sum, c) => sum + c.chapters, 0);
+        const completedChapters = courses.reduce((sum, c) => sum + c.completedChapters, 0);
+        const overallProgress = totalChapters > 0 ? Math.round((completedChapters / totalChapters) * 100) : 0;
+        const pendingChapters = totalChapters - completedChapters;
+        const earnedCerts = certs.filter(c => !c.locked).length;
+
+        setStats({
+          activeCourses,
+          overallProgress,
+          pendingChapters,
+          certificates: earnedCerts,
+        });
+      } catch (err) {
+        console.error('获取仪表盘数据失败:', err);
+      }
+      setLoading(false);
+    };
+
+    fetchStats();
+  }, []);
 
   return (
     <div className="page" style={{ animation: 'pageEnter 0.4s cubic-bezier(0.4, 0, 0.2, 1)' }}>
@@ -10,7 +60,7 @@ export default function DashboardPage() {
         <div>
           <div className="breadcrumb">首页 / <span>仪表板</span></div>
           <h1>欢迎回来，学习者</h1>
-          <p>继续你的学习之旅 · 今日已学习 2 小时 15 分钟</p>
+          <p>继续你的学习之旅</p>
         </div>
         <button
           style={{
@@ -80,9 +130,8 @@ export default function DashboardPage() {
               <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
             </svg>
           </div>
-          <div className="stat-value">4</div>
+          <div className="stat-value">{loading ? '...' : stats.activeCourses}</div>
           <div className="stat-label">进行中的课程</div>
-          <div className="stat-trend up">↑ 较上周 +1</div>
         </div>
         <div className="stat-card">
           <div className="stat-icon">
@@ -91,9 +140,8 @@ export default function DashboardPage() {
               <polyline points="22 4 12 14.01 9 11.01" />
             </svg>
           </div>
-          <div className="stat-value">68%</div>
+          <div className="stat-value">{loading ? '...' : `${stats.overallProgress}%`}</div>
           <div className="stat-label">整体完成度</div>
-          <div className="stat-trend up">↑ 较上周 +12%</div>
         </div>
         <div className="stat-card">
           <div className="stat-icon">
@@ -104,9 +152,8 @@ export default function DashboardPage() {
               <line x1="3" y1="10" x2="21" y2="10" />
             </svg>
           </div>
-          <div className="stat-value">12</div>
-          <div className="stat-label">本周待学章节</div>
-          <div className="stat-trend down">← 3 项逾期</div>
+          <div className="stat-value">{loading ? '...' : stats.pendingChapters}</div>
+          <div className="stat-label">待学章节</div>
         </div>
         <div className="stat-card">
           <div className="stat-icon">
@@ -119,9 +166,8 @@ export default function DashboardPage() {
               <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
             </svg>
           </div>
-          <div className="stat-value">3</div>
+          <div className="stat-value">{loading ? '...' : stats.certificates}</div>
           <div className="stat-label">已获证书</div>
-          <div className="stat-trend up">↑ 再完成 1 门可获新证书</div>
         </div>
       </div>
     </div>

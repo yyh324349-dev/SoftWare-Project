@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useOutletContext } from 'react-router-dom';
 import { get, post } from '@/lib/api';
+import React from 'react';
 
 interface OutletContext {
   courseTitle: string;
@@ -36,7 +37,7 @@ export default function OutlineTab() {
   const [error, setError] = useState('');
   const [refreshing, setRefreshing] = useState(false);
 
-  const fetchSyllabus = () => {
+  const fetchSyllabus = useCallback(() => {
     if (!courseId) return;
     setLoading(true);
     get<SyllabusResponse>(`/courses/${courseId}/syllabus`)
@@ -48,11 +49,11 @@ export default function OutlineTab() {
         setError(err.message);
         setLoading(false);
       });
-  };
+  }, [courseId]);
 
   useEffect(() => {
     fetchSyllabus();
-  }, [courseId]);
+  }, [fetchSyllabus]);
 
   const handleRefresh = async () => {
     if (!courseId) return;
@@ -140,38 +141,40 @@ export default function OutlineTab() {
         </thead>
         <tbody>
           {data.sections.map((section, si) => (
-            <><tr className="sched-sep" key={`sep-${si}`}>
-              <td className="sched-wk" colSpan={5}>
-                {section.title || `第 ${section.weeks[0]?.weekNumber || ''} 周`}
-              </td>
-            </tr>
-            {section.weeks.map((week, wi) => (
-              <tr key={week.id || `${si}-${wi}`} className={getRowClass(week.status)}>
-                <td className="sched-wk">{week.weekNumber}</td>
-                <td className="sched-topic">
-                  {week.topic}
-                  {getStatusPill(week.status)}
-                  {week.description && (
-                    <div className="sched-reading">{week.description}</div>
-                  )}
-                </td>
-                <td>
-                  <span className="sched-link locked-link">
-                    Lab {week.weekNumber}
-                    <span className="create-btn">创建</span>
-                  </span>
-                </td>
-                <td>
-                  <span className="sched-link locked-link">
-                    Proj
-                    <span className="create-btn">创建</span>
-                  </span>
-                </td>
-                <td>
-                  <span className="sched-disc">—</span>
+            <React.Fragment key={`sep-${si}`}>
+              <tr className="sched-sep">
+                <td className="sched-wk" colSpan={5}>
+                  {section.title || `第 ${section.weeks[0]?.weekNumber || ''} 周`}
                 </td>
               </tr>
-            ))}</>
+              {section.weeks.map((week, wi) => (
+                <tr key={week.id || `${si}-${wi}`} className={getRowClass(week.status)}>
+                  <td className="sched-wk">{week.weekNumber}</td>
+                  <td className="sched-topic">
+                    {week.topic}
+                    {getStatusPill(week.status)}
+                    {week.description && (
+                      <div className="sched-reading">{week.description}</div>
+                    )}
+                  </td>
+                  <td>
+                    <span className="sched-link locked-link">
+                      Lab {week.weekNumber}
+                      <span className="create-btn">创建</span>
+                    </span>
+                  </td>
+                  <td>
+                    <span className="sched-link locked-link">
+                      Proj
+                      <span className="create-btn">创建</span>
+                    </span>
+                  </td>
+                  <td>
+                    <span className="sched-disc">—</span>
+                  </td>
+                </tr>
+              ))}
+            </React.Fragment>
           ))}
         </tbody>
       </table>

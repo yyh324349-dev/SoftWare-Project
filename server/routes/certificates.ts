@@ -7,7 +7,7 @@ const router = Router();
 // GET /api/certificates - 获取所有证书
 router.get('/', (_req: AuthRequest, res: Response) => {
   const certs = db.prepare(`
-    SELECT c.id, c.title, c.description, c.issued_at,
+    SELECT c.id, c.title, c.description, c.issued_at, c.grade,
            COALESCE(c.course_title, co.title) as course_title
     FROM certificates c
     LEFT JOIN courses co ON c.course_id = co.id
@@ -33,19 +33,15 @@ router.get('/', (_req: AuthRequest, res: Response) => {
     ).all() as Array<Record<string, unknown>>;
   }
 
-  // 已获得证书
-  const earnedCerts = certs.map((c: Record<string, unknown>) => {
-    const grades = ['优秀 (A)', '良好 (B+)', '优秀 (A)', '良好 (A-)'];
-    const randomGrade = grades[Math.floor(Math.random() * grades.length)];
-    return {
-      id: c.id,
-      courseTitle: c.course_title || c.title,
-      issuedAt: c.issued_at as string,
-      grade: randomGrade,
-      verified: true,
-      locked: false,
-    };
-  });
+  // 已获得证书 - 从数据库读取成绩
+  const earnedCerts = certs.map((c: Record<string, unknown>) => ({
+    id: c.id,
+    courseTitle: c.course_title || c.title,
+    issuedAt: c.issued_at as string,
+    grade: c.grade || '良好 (B+)',
+    verified: true,
+    locked: false,
+  }));
 
   // 未获得证书
   const lockedCerts = inProgressCourses.map((c: Record<string, unknown>) => {
@@ -58,7 +54,7 @@ router.get('/', (_req: AuthRequest, res: Response) => {
 
     const progress = syllabusCount.count > 0
       ? Math.round((completedCount.count / syllabusCount.count) * 100)
-      : Math.floor(Math.random() * 70) + 10;
+      : 0;
 
     const remaining = syllabusCount.count - completedCount.count;
     const months = remaining > 6 ? '2' : '1';

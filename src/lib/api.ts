@@ -1,28 +1,17 @@
 /**
  * API 请求封装
- * 自动携带 JWT token
  */
 
 const API_BASE = '/api';
-
-function getToken(): string | null {
-  return localStorage.getItem('mozhi_token');
-}
 
 export async function fetchAPI<T = unknown>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
-  const token = getToken();
-
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string> | undefined),
   };
-
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
 
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
