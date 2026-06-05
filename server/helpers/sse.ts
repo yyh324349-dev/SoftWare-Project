@@ -34,3 +34,6 @@ export function sendSSEError(res: Response, message: string): void {
   sendSSE(res, 'error', { message });
   endSSE(res);
 }
+
+/** setupSSE 是 initSSE 的别名，保持命名一致性 */
+export const setupSSE = initSSE;

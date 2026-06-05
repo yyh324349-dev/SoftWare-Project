@@ -168,6 +168,31 @@ db.exec(`
     completed_at TEXT,
     UNIQUE(course_id, syllabus_id)
   );
+
+  -- 15. 实验文件（多文件支持）
+  CREATE TABLE IF NOT EXISTS lab_files (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    lab_id INTEGER NOT NULL REFERENCES labs(id) ON DELETE CASCADE,
+    filename TEXT NOT NULL,
+    content TEXT DEFAULT '',
+    is_entry INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now')),
+    UNIQUE(lab_id, filename)
+  );
+`);
+
+// ========== 性能索引 ==========
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_syllabus_course_id ON syllabus(course_id);
+  CREATE INDEX IF NOT EXISTS idx_topics_course_id ON topics(course_id);
+  CREATE INDEX IF NOT EXISTS idx_messages_topic_id ON messages(topic_id);
+  CREATE INDEX IF NOT EXISTS idx_labs_course_id ON labs(course_id);
+  CREATE INDEX IF NOT EXISTS idx_projects_course_id ON projects(course_id);
+  CREATE INDEX IF NOT EXISTS idx_topic_notes_course_id ON topic_notes(course_id);
+  CREATE INDEX IF NOT EXISTS idx_learning_sessions_course_id ON learning_sessions(course_id);
+  CREATE INDEX IF NOT EXISTS idx_lecture_progress_course_syllabus ON lecture_progress(course_id, syllabus_id);
 `);
 
 // 初始化 settings 单例行（如果不存在）

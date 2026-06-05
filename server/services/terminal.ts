@@ -30,6 +30,10 @@ const COMMANDS: Record<string, (file: string) => string[]> = {
 /**
  * 在本地沙箱中执行代码
  * 写入临时文件 → spawn 子进程 → 收集输出 → 清理文件
+ *
+ * ⚠️ 安全警告：当前实现仅做了基本的环境变量隔离和输出限制。
+ * 生产环境中应使用 Docker 容器或 VM 沙箱来隔离执行环境，
+ * 以防止恶意代码访问宿主机文件系统、网络等资源。
  */
 export async function executeCode(
   code: string,
@@ -58,14 +62,23 @@ export async function executeCode(
   }
 }
 
+// 输出长度上限：10KB，防止子进程输出过多导致内存耗尽
+const MAX_OUTPUT_BYTES = 10 * 1024;
+
 function runProcess(
   command: string[],
   timeout: number,
 ): Promise<ExecutionResult> {
   return new Promise((resolve) => {
+    // 安全：仅传递 PATH 和 HOME 环境变量，HOME 设置为临时目录
+    const safeEnv: Record<string, string> = {
+      PATH: process.env.PATH || '/usr/local/bin:/usr/bin:/bin',
+      HOME: os.tmpdir(),
+    };
+
     const proc = spawn(command[0], command.slice(1), {
       cwd: os.tmpdir(),
-      env: { ...process.env },
+      env: safeEnv,
       timeout,
     });
 
@@ -74,10 +87,20 @@ function runProcess(
     let timedOut = false;
 
     proc.stdout.on('data', (data: Buffer) => {
-      stdout += data.toString();
+      if (stdout.length < MAX_OUTPUT_BYTES) {
+        stdout += data.toString();
+        if (stdout.length > MAX_OUTPUT_BYTES) {
+          stdout = stdout.slice(0, MAX_OUTPUT_BYTES) + '\n... [输出已截断，超过 10KB 上限]';
+        }
+      }
     });
     proc.stderr.on('data', (data: Buffer) => {
-      stderr += data.toString();
+      if (stderr.length < MAX_OUTPUT_BYTES) {
+        stderr += data.toString();
+        if (stderr.length > MAX_OUTPUT_BYTES) {
+          stderr = stderr.slice(0, MAX_OUTPUT_BYTES) + '\n... [输出已截断，超过 10KB 上限]';
+        }
+      }
     });
 
     proc.on('close', (code) => {

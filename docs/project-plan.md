@@ -17,13 +17,15 @@
 | 后端框架 | Express 4 + TypeScript | API 服务器，端口 3001 |
 | 前端框架 | React 19 + TypeScript | SPA 单页应用 |
 | 构建工具 | Vite 6 | 前端热更新，开发端口 3000 |
-| 样式方案 | 自定义 CSS（来自 demo.html）+ Tailwind 补充 | 保留 demo.html 的设计系统 |
+| 样式方案 | 自定义 CSS（来自 demo.html） | 保留 demo.html 的设计系统 |
 | 数据库 | SQLite (better-sqlite3) | 零配置，文件存储在 `data/mozhi.db` |
 | 代码编辑 | Monaco Editor | 浏览器端代码编辑器 |
 | 代码执行 | child_process (本地) | 本地执行用户代码 |
 | AI 集成 | Anthropic SDK + OpenAI SDK | 双 Provider，用户自配 API Key |
 | 流式通信 | SSE (Server-Sent Events) | AI 对话逐字输出 |
-| 认证 | JWT + bcrypt | 单用户密码认证 |
+| 前端路由 | react-router-dom | SPA 客户端路由 |
+| 代码编辑器 UI | @monaco-editor/react | Monaco Editor 的 React 封装 |
+| 认证 | 已禁用 | 学习项目，无需认证，中间件直接放行 |
 | API Key 存储 | AES-256-GCM 加密 | 用户 API Key 加密存数据库 |
 
 ---
@@ -42,9 +44,9 @@ software-project/
 │   ├── index.ts                        # Express 启动入口 + WebSocket
 │   ├── db.ts                           # SQLite 连接 + 建表 + 迁移
 │   ├── middleware/
-│   │   └── auth.ts                     # JWT 认证中间件
+│   │   └── auth.ts                     # 认证中间件（已禁用，直接放行）
 │   ├── routes/                         # API 路由（每人负责自己的文件）
-│   │   ├── auth.ts                     # 登录/注册
+│   │   ├── auth.ts                     # 登录/注册（已禁用）
 │   │   ├── courses.ts                  # 课程 CRUD
 │   │   ├── outline.ts                  # 大纲生成/查询
 │   │   ├── chat.ts                     # AI 对话（SSE 流式）
@@ -76,7 +78,7 @@ software-project/
 │   ├── types/
 │   │   └── index.ts                    # 共享 TypeScript 类型
 │   ├── lib/
-│   │   ├── api.ts                      # fetch 封装（自动带 JWT token）
+│   │   ├── api.ts                      # fetch 封装
 │   │   └── utils.ts                    # 工具函数
 │   ├── hooks/
 │   │   ├── useStreamChat.ts            # SSE 流式聊天 hook
@@ -147,11 +149,12 @@ software-project/
 │   📁 server/services/     — 全部（AI/加密/终端/生成器）            │
 │   📁 server/prompts/      — 全部提示词模板                        │
 │   📁 server/helpers/      — SSE 工具                             │
-│   📁 server/routes/auth.ts, sandbox.ts, settings.ts             │
+│   📁 server/routes/auth.ts, sandbox.ts                          │
 │   📁 src/lib/             — api.ts, utils.ts                    │
 │   📁 src/types/           — 类型定义                             │
 │   📁 src/hooks/           — useStreamChat, useCodeExecution     │
 │   📁 src/components/layout/ — AppShell, Breadcrumb, Toast       │
+│   📁 src/components/course-detail/CourseDetailLayout.tsx         │
 │                                                                 │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
@@ -160,7 +163,6 @@ software-project/
 │                                                                 │
 │   📁 src/components/dashboard/     — DashboardPage              │
 │   📁 src/components/courses/       — CoursesPage, CreateCourse  │
-│   📁 src/components/course-detail/ — CourseDetailLayout         │
 │   📁 src/components/course-detail/outline/ — OutlineTab         │
 │   📁 src/components/report/        — ReportPage                 │
 │   📁 src/components/certificates/  — CertificatesPage           │
@@ -177,7 +179,8 @@ software-project/
 │   📁 src/components/course-detail/chat/        — ChatTab       │
 │   📁 src/components/course-detail/labs/        — LabsTab       │
 │   📁 src/components/course-detail/projects/    — ProjectsTab   │
-│   📁 server/routes/chat.ts, notes.ts, labs.ts, projects.ts     │
+│   📁 server/routes/chat.ts, notes.ts, labs.ts, projects.ts,    │
+│      settings.ts                                                │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -201,7 +204,7 @@ software-project/
 | server/routes/labs.ts | | | ✍️ |
 | server/routes/projects.ts | | | ✍️ |
 | server/routes/sandbox.ts | ✍️ | | |
-| server/routes/settings.ts | ✍️ | | |
+| server/routes/settings.ts | | | ✍️ |
 | server/routes/report.ts | | ✍️ | |
 | server/routes/certificates.ts | | ✍️ | |
 | **src/lib/** | ✍️ | | |
@@ -210,7 +213,7 @@ software-project/
 | **src/components/layout/** | ✍️ | | |
 | src/components/dashboard/ | | ✍️ | |
 | src/components/courses/ | | ✍️ | |
-| src/components/course-detail/CourseDetailLayout | | ✍️ | |
+| src/components/course-detail/CourseDetailLayout | ✍️ | | |
 | src/components/course-detail/outline/ | | ✍️ | |
 | src/components/course-detail/notes/ | | | ✍️ |
 | src/components/course-detail/chat/ | | | ✍️ |
@@ -266,9 +269,9 @@ software-project/
              │ ⑯ C:      │      └─────┬─────┘
              │ Chat Tab  │            │
              └───────────┘      ┌─────▼─────┐
-                                │ ⑱ C:      │
+                                │ ⑰ C:      │
                                 │ Labs Tab  │
-                                │ ⑲ C:      │
+                                │ ⑱ C:      │
                                 │Projects Tab│
                                 └───────────┘
 ```
@@ -307,10 +310,10 @@ software-project/
 |:----:|------|------|------|----------|
 | ⑦ | Zee | **代码执行沙箱** | `services/terminal.ts` + sandbox API | ① |
 | ⑧ | Zee | **联调 + Bug 修复** | 整体功能调试 | 所有 |
-| ⑫ | 队友B | 大纲 Tab + 课程详情框架 | CourseDetailLayout + OutlineTab | ⑥ |
+| ⑫ | 队友B | 大纲 Tab | OutlineTab（CourseDetailLayout 由 Zee 提供） | ⑥ |
 | ⑬ | 队友B | 学习报告 + 证书 | ReportPage + CertificatesPage | ③ |
-| ⑱ | 队友C | Labs 实验 Tab | LabsTab + Monaco Editor + 代码执行 | ⑦ |
-| ⑲ | 队友C | Projects 项目 Tab | ProjectsTab（复用 Lab 编辑器） | ⑦ |
+| ⑰ | 队友C | Labs 实验 Tab | LabsTab + Monaco Editor + 代码执行 | ⑦ |
+| ⑱ | 队友C | Projects 项目 Tab | ProjectsTab（复用 Lab 编辑器） | ⑦ |
 
 > **里程碑**：第 3 周结束，所有功能可用，可以演示完整流程。
 
@@ -354,11 +357,11 @@ gh pr create --title "feat: 功能描述"     # 提 PR
 
 ## 六、数据库表设计
 
-SQLite 共 14 张表：
+SQLite 共 15 张表：
 
 | 表名 | 用途 | 负责人 |
 |------|------|--------|
-| auth_config | 密码存储（bcrypt） | Zee |
+| auth_config | 密码存储（bcrypt，已停用） | Zee |
 | settings | API Key（加密）+ 偏好设置 | Zee |
 | courses | 课程（标题、描述、风格、格式） | 队友B 的 API |
 | syllabus | 课程大纲（每周主题、状态） | 队友B 的 API |
@@ -372,8 +375,10 @@ SQLite 共 14 张表：
 | certificates | 证书 | 队友B 的 API |
 | learning_sessions | 学习时长记录 | 队友B 的 API |
 | lecture_progress | 章节完成进度 | Zee |
+| lab_files | 实验代码文件存储 | 队友C 的 API |
 
 > 建表 SQL 由 Zee 在 `server/db.ts` 中统一管理，其他人在各自的路由文件中只做 CRUD 操作。
+> SQLite 共 15 张表（含 lab_files）。
 
 ---
 
@@ -381,13 +386,15 @@ SQLite 共 14 张表：
 
 所有 API 以 `/api/` 为前缀，Vite 开发模式自动代理到 Express。
 
-### 认证
+### 认证（已禁用）
+
+> 本项目为学习项目，不启用真实认证。中间件直接放行所有请求，auth 路由返回固定响应。
 
 | 方法 | 路径 | 说明 | 负责人 |
 |------|------|------|--------|
-| POST | /api/auth/setup | 首次设置密码 | Zee |
-| POST | /api/auth/login | 登录获取 JWT | Zee |
-| GET | /api/auth/status | 检查认证状态 | Zee |
+| POST | /api/auth/setup | 已禁用，返回固定 token | Zee |
+| POST | /api/auth/login | 已禁用，返回固定 token | Zee |
+| GET | /api/auth/status | 返回 `{ setup: true, disabled: true }` | Zee |
 
 ### 课程（队友 B）
 
@@ -442,7 +449,13 @@ SQLite 共 14 张表：
 | GET | /api/report | 学习统计数据 |
 | GET | /api/certificates | 证书列表 |
 
-### 设置 & 代码执行（Zee）
+### 代码执行（Zee）
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | /api/sandbox/run | 执行代码 |
+
+### 设置（队友 C）
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
