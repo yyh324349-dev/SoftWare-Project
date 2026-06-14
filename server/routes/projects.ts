@@ -27,7 +27,7 @@ router.post('/courses/:id/projects/generate', async (req: Request, res: Response
   // 检查是否已存在（通过 order_index 检查唯一性）
   const existing = db.prepare(
     'SELECT * FROM projects WHERE course_id = ? AND order_index = ?'
-  ).get(id, weekNumber);
+  ).get(id, weekNumber) as Record<string, any> | undefined;
 
   if (existing) {
     res.json({ message: '项目已存在', projectId: existing.id });
@@ -103,7 +103,7 @@ router.get('/courses/:id/projects/:projId', (req: Request, res: Response) => {
   const { id, projId } = req.params;
   const project = db.prepare(
     'SELECT * FROM projects WHERE id = ? AND course_id = ?'
-  ).get(projId, id);
+  ).get(projId, id) as Record<string, any> | undefined;
 
   if (!project) {
     res.status(404).json({ error: '项目不存在' });
@@ -158,7 +158,7 @@ router.put(
     // 获取项目
     const project = db.prepare(
       'SELECT * FROM projects WHERE id = ? AND course_id = ?'
-    ).get(projId, id);
+    ).get(projId, id) as Record<string, any> | undefined;
 
     if (!project) {
       res.status(404).json({ error: '项目不存在' });

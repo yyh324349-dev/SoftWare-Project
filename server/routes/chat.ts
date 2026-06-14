@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import db from '../db';
-import { chat } from '../services/ai';
+import { chatStream } from '../services/ai';
+import { initSSE, sendSSEChunk, endSSE, sendSSEError } from '../helpers/sse';
 
 const router = Router();
 
@@ -49,7 +50,7 @@ router.get('/topics/:id/messages', (req: Request, res: Response) => {
   });
 });
 
-/** 发送聊天消息 */
+/** 发送聊天消息（SSE 流式） */
 router.post('/chat', async (req: Request, res: Response) => {
   const { topicId, content } = req.body;
 
@@ -57,6 +58,9 @@ router.post('/chat', async (req: Request, res: Response) => {
   db.prepare(
     'INSERT INTO messages (topic_id, role, content) VALUES (?, ?, ?)'
   ).run(topicId, 'user', content);
+
+  // 初始化 SSE 响应头
+  initSSE(res);
 
   try {
     // 获取课程信息
@@ -80,26 +84,27 @@ router.post('/chat', async (req: Request, res: Response) => {
 
 请根据学生的提问提供详细、有帮助的回答。`;
 
-    // 调用 AI 生成回复
+    // 调用 AI 流式生成回复
     const messages = history.map(m => ({
       role: m.role as 'user' | 'assistant',
       content: m.content,
     }));
 
-    const reply = await chat(systemPrompt, messages, { maxTokens: 4096 });
+    let fullReply = '';
+
+    for await (const chunk of chatStream(systemPrompt, messages)) {
+      fullReply += chunk;
+      sendSSEChunk(res, chunk);
+    }
 
     // 保存 AI 回复
     db.prepare(
       'INSERT INTO messages (topic_id, role, content) VALUES (?, ?, ?)'
-    ).run(topicId, 'assistant', reply);
+    ).run(topicId, 'assistant', fullReply);
 
-    res.json({
-      topicId,
-      content,
-      reply,
-    });
+    endSSE(res);
   } catch (err) {
-    console.error('AI 回复失败:', err);
+    console.error('AI 流式回复失败:', err);
     const errorMsg = '抱歉，AI 服务暂时不可用。请检查 API Key 是否已配置。';
 
     // 保存错误消息
@@ -107,11 +112,7 @@ router.post('/chat', async (req: Request, res: Response) => {
       'INSERT INTO messages (topic_id, role, content) VALUES (?, ?, ?)'
     ).run(topicId, 'assistant', errorMsg);
 
-    res.json({
-      topicId,
-      content,
-      reply: errorMsg,
-    });
+    sendSSEError(res, errorMsg);
   }
 });
 

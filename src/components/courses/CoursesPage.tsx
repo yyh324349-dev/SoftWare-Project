@@ -9,7 +9,7 @@ export default function CoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [, setDeletingId] = useState<number | null>(null);
 
   const fetchCourses = () => {
     get<{ courses: Course[] }>('/courses')

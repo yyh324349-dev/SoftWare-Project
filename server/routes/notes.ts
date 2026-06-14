@@ -21,7 +21,7 @@ router.get('/courses/:id/notes/:weekNum', (req: Request, res: Response) => {
   const { id, weekNum } = req.params;
   const note = db.prepare(
     'SELECT * FROM topic_notes WHERE course_id = ? AND week_number = ?'
-  ).get(id, weekNum);
+  ).get(id, weekNum) as Record<string, any> | undefined;
 
   if (!note) {
     res.json({
@@ -138,7 +138,7 @@ router.post('/courses/:id/notes/:weekNum/append', (req: Request, res: Response) 
   // 检查笔记是否存在
   const existing = db.prepare(
     'SELECT * FROM topic_notes WHERE course_id = ? AND week_number = ?'
-  ).get(id, weekNum);
+  ).get(id, weekNum) as Record<string, any> | undefined;
 
   if (existing) {
     // 追加内容

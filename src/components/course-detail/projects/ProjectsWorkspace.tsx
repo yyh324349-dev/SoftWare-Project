@@ -196,7 +196,7 @@ export default function ProjectsWorkspace({
               <div className="milestones-section">
                 <h4 className="milestones-title">项目里程碑</h4>
                 <div className="milestones-list">
-                  {project.milestones.map((m, index) => (
+                  {project.milestones.map((m) => (
                     <div
                       key={m.id}
                       className={`milestone-item ${m.id === milestone.id ? 'active' : ''} ${m.status}`}

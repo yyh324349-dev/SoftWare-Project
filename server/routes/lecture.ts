@@ -125,6 +125,7 @@ router.post('/courses/:courseId/syllabus/:syllabusId/outline/generate', async (r
       weekTopic: syllabus.topic as string,
       weekDescription: (syllabus.description as string) || '',
       style: (course.style as string) || 'khanmigo',
+      mode: 'preview',
     });
 
     if (!outlineData || !Array.isArray(outlineData)) {

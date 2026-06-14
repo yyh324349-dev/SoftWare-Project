@@ -1,8 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   ArrowLeft, Play, Send, Bot, ChevronRight, ChevronDown,
-  File, Folder, FolderOpen, Terminal, Code, BookOpen,
-  PanelLeftClose, PanelLeftOpen, Loader2, CheckCircle, ListChecks, Sparkles
+  Folder, FolderOpen, Terminal, Code, BookOpen,
+  PanelLeftClose, PanelLeftOpen, Loader2
 } from 'lucide-react';
 import Editor from '@monaco-editor/react';
 import { post } from '@/lib/api';

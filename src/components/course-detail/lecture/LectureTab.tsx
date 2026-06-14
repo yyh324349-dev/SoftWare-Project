@@ -43,7 +43,7 @@ interface SectionContent {
 
 export default function LectureTab() {
   const { courseId } = useParams<{ courseId: string }>();
-  const { courseTitle } = useOutletContext<OutletContext>();
+  useOutletContext<OutletContext>(); // keep for typing
 
   const [chapters, setChapters] = useState<ChapterItem[]>([]);
   const [expandedChapters, setExpandedChapters] = useState<Set<number>>(new Set());

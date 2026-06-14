@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import db from '../db';
 import { generateLab } from '../services/generator';
+import { executeCode } from '../services/terminal';
 
 const router = Router();
 
@@ -27,7 +28,7 @@ router.post('/courses/:id/labs/generate', async (req: Request, res: Response) =>
   // 检查是否已存在
   const existing = db.prepare(
     'SELECT * FROM labs WHERE course_id = ? AND order_index = ?'
-  ).get(id, weekNumber);
+  ).get(id, weekNumber) as Record<string, any> | undefined;
 
   if (existing) {
     res.json({ message: '实验已存在', labId: existing.id });
@@ -96,7 +97,7 @@ router.get('/courses/:id/labs/:labId', (req: Request, res: Response) => {
   const { id, labId } = req.params;
   const lab = db.prepare(
     'SELECT * FROM labs WHERE id = ? AND course_id = ?'
-  ).get(labId, id);
+  ).get(labId, id) as Record<string, any> | undefined;
 
   if (!lab) {
     res.status(404).json({ error: '实验不存在' });
@@ -113,31 +114,55 @@ router.get('/courses/:id/labs/:labId', (req: Request, res: Response) => {
   });
 });
 
-/** 更新实验文件内容 */
+/** 更新实验文件内容（保存学生代码） */
 router.put('/courses/:id/labs/:labId/files', (req: Request, res: Response) => {
-  // TODO: 保存学生编辑后的实验文件
-  const { id, labId } = req.params;
+  const { labId } = req.params;
   const { files } = req.body;
+
+  if (typeof files === 'object' && files !== null) {
+    // 将文件内容保存到数据库
+    // 复用 starter_code 字段存储学生代码文件
+    const primaryFile = Object.values(files as Record<string, string>)[0] || '';
+    db.prepare(
+      "UPDATE labs SET starter_code = ? WHERE id = ?"
+    ).run(primaryFile, labId);
+  }
+
   res.json({
-    courseId: Number(id),
     labId: Number(labId),
-    filesCount: Array.isArray(files) ? files.length : 0,
-    message: '文件已保存（mock）',
+    filesCount: typeof files === 'object' ? Object.keys(files).length : 0,
+    message: '文件已保存',
   });
 });
 
-/** 运行实验代码 */
-router.post('/courses/:id/labs/:labId/run', (req: Request, res: Response) => {
-  // TODO: 执行学生实验代码并返回运行结果
-  const { id, labId } = req.params;
-  res.json({
-    courseId: Number(id),
-    labId: Number(labId),
-    stdout: '',
-    stderr: '',
-    exitCode: 0,
-    message: '代码执行结果占位（mock）',
-  });
+/** 运行实验代码（调用真实终端沙箱） */
+router.post('/courses/:id/labs/:labId/run', async (req: Request, res: Response) => {
+  const { labId } = req.params;
+  const { code, language } = req.body;
+
+  let codeToRun = code;
+  let lang = language;
+
+  // 如果前端没传代码，从 DB 读取 starter_code
+  if (!codeToRun) {
+    const lab = db.prepare('SELECT * FROM labs WHERE id = ?').get(labId) as Record<string, any> | undefined;
+    codeToRun = lab?.starter_code || '';
+    if (!lang && lab?.language) {
+      lang = lab.language;
+    }
+  }
+
+  try {
+    const result = await executeCode(codeToRun, lang || 'python');
+    res.json(result);
+  } catch (err) {
+    res.json({
+      stdout: '',
+      stderr: `执行失败: ${err instanceof Error ? err.message : String(err)}`,
+      exitCode: 1,
+      timedOut: false,
+    });
+  }
 });
 
 export default router;

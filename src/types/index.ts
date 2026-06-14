@@ -104,3 +104,13 @@ export interface Certificate {
   estimatedCompletion?: string;
   locked: boolean;
 }
+
+// ========== 聊天相关类型 ==========
+
+export interface Message {
+  id: number;
+  topicId: number;
+  role: 'user' | 'assistant';
+  content: string;
+  createdAt: string;
+}

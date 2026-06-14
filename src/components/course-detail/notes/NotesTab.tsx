@@ -26,7 +26,7 @@ interface NoteContent {
 
 export default function NotesTab() {
   const { courseId } = useParams<{ courseId: string }>();
-  const { courseTitle } = useOutletContext<OutletContext>();
+  useOutletContext<OutletContext>(); // keep for typing
 
   const [weeks, setWeeks] = useState<WeekNote[]>([]);
   const [selectedWeek, setSelectedWeek] = useState<WeekNote | null>(null);

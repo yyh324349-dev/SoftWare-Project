@@ -38,7 +38,7 @@ interface Milestone {
 
 export default function ProjectsTab() {
   const { courseId } = useParams<{ courseId: string }>();
-  const { courseTitle } = useOutletContext<OutletContext>();
+  useOutletContext<OutletContext>(); // keep for typing
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<ProjectDetail | null>(null);

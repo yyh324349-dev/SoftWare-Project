@@ -23,8 +23,16 @@ const EXTENSIONS: Record<string, string> = {
 
 const COMMANDS: Record<string, (file: string) => string[]> = {
   python: (f) => ['python3', f],
+  python3: (f) => ['python3', f],
   javascript: (f) => ['node', f],
+  js: (f) => ['node', f],
   typescript: (f) => ['npx', 'tsx', f],
+  ts: (f) => ['npx', 'tsx', f],
+  java: (f) => ['java', f],
+  cpp: (f) => ['./' + f],
+  c: (f) => ['./' + f],
+  go: (f) => ['go', 'run', f],
+  rust: (f) => ['rustc', f],
 };
 
 /**
@@ -79,12 +87,15 @@ function runProcess(
     const proc = spawn(command[0], command.slice(1), {
       cwd: os.tmpdir(),
       env: safeEnv,
-      timeout,
     });
 
     let stdout = '';
     let stderr = '';
     let timedOut = false;
+    const timer = setTimeout(() => {
+      timedOut = true;
+      proc.kill('SIGTERM');
+    }, timeout);
 
     proc.stdout.on('data', (data: Buffer) => {
       if (stdout.length < MAX_OUTPUT_BYTES) {
@@ -104,10 +115,12 @@ function runProcess(
     });
 
     proc.on('close', (code) => {
+      clearTimeout(timer);
       resolve({ stdout, stderr, exitCode: code ?? 1, timedOut });
     });
 
     proc.on('error', (err) => {
+      clearTimeout(timer);
       resolve({ stdout, stderr: err.message, exitCode: 1, timedOut: false });
     });
   });

@@ -109,36 +109,6 @@ function findLastValidJSON(str: string): number {
   return lastValidEnd;
 }
 
-/** 修复常见的 JSON 格式问题 */
-function fixJSON(str: string): string {
-  // 移除可能的前后非 JSON 内容
-  let json = str;
-
-  // 找到第一个 { 或 [
-  const start = json.search(/[\[{]/);
-  if (start > 0) {
-    json = json.substring(start);
-  }
-
-  // 找到最后一个 } 或 ]
-  const end = json.search(/[\]}]\s*$/);
-  if (end > 0) {
-    json = json.substring(0, json.lastIndexOf(json[end]) + 1);
-  }
-
-  // 修复未转义的换行符（在字符串内部）
-  json = json.replace(/(?<=[^\\])\n/g, '\\n');
-
-  // 修复未转义的双引号（在字符串内部）
-  // 这是一个简化处理，可能不完美
-  json = json.replace(/(?<=[^\\])"/g, '\\"');
-
-  // 修复单引号为双引号
-  json = json.replace(/'/g, '"');
-
-  return json;
-}
-
 /** 生成课程大纲 */
 export async function generateSyllabus(context: {
   title: string;
@@ -159,10 +129,10 @@ export async function generateLab(context: {
   weekTopic: string;
   weekDescription: string;
   language?: string;
-}) {
+}): Promise<Record<string, any>> {
   const { system, user, isCode } = getLabsPrompt(context);
   const response = await chat(system, [{ role: 'user', content: user }], { maxTokens: 8192 });
-  const data = extractJSON(response);
+  const data = extractJSON<Record<string, any>>(response);
   return { ...data, is_code: isCode };
 }
 
@@ -173,10 +143,10 @@ export async function generateProject(context: {
   weekTopic: string;
   weekDescription: string;
   language?: string;
-}) {
+}): Promise<Record<string, any>> {
   const { system, user, isCode } = getProjectsPrompt(context);
   const response = await chat(system, [{ role: 'user', content: user }], { maxTokens: 8192 });
-  const data = extractJSON(response);
+  const data = extractJSON<Record<string, any>>(response);
   return { ...data, is_code: isCode };
 }
 
@@ -188,6 +158,7 @@ export async function generateLectureOutline(context: {
   weekTopic: string;
   weekDescription: string;
   style: string;
+  mode: 'full' | 'preview';
 }) {
   const { system, user } = getLectureOutlinePrompt(context);
   const response = await chat(system, [{ role: 'user', content: user }]);

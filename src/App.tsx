@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { Suspense } from 'react';
 import AppShell from './components/layout/AppShell';
 import DashboardPage from '@/components/dashboard/DashboardPage';

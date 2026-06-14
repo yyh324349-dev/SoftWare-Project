@@ -27,7 +27,7 @@ interface LabDetail {
 
 export default function LabsTab() {
   const { courseId } = useParams<{ courseId: string }>();
-  const { courseTitle } = useOutletContext<OutletContext>();
+  useOutletContext<OutletContext>(); // keep for typing
 
   const [labs, setLabs] = useState<Lab[]>([]);
   const [selectedLab, setSelectedLab] = useState<LabDetail | null>(null);

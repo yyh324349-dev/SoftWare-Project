@@ -23,7 +23,7 @@ function calculateChapterCompletion(courseId: number, syllabusId: number): boole
 }
 
 // GET /api/courses - 获取所有课程列表
-router.get('/', (req: AuthRequest, res: Response) => {
+router.get('/', (_req: AuthRequest, res: Response) => {
   const courses = db.prepare(`
     SELECT id, title, description, style, format, status, created_at, updated_at
     FROM courses ORDER BY created_at DESC
