@@ -266,6 +266,16 @@ body::after {
 .course-card .card-banner { height: 100px; position: relative; overflow: hidden; }
 .course-card .card-banner .banner-bg { position: absolute; inset: 0; opacity: 0.4; }
 .course-card .card-banner .banner-icon { position: absolute; bottom: -20px; right: 12px; font-size: 48px; opacity: 0.2; }
+.course-card .card-delete-btn {
+  position: absolute; top: 8px; right: 8px; z-index: 10;
+  width: 28px; height: 28px; border-radius: 6px;
+  background: rgba(0,0,0,0.5); border: none;
+  color: rgba(255,255,255,0.6); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: all 0.15s;
+}
+.course-card:hover .card-delete-btn { opacity: 1; }
+.course-card .card-delete-btn:hover { background: rgba(239,68,68,0.8); color: white; }
 .course-card .card-body { padding: 16px 20px 20px; }
 .course-card .card-body .course-tag { display: inline-block; font-size: 11px; padding: 2px 10px; border-radius: 20px; margin-bottom: 8px; }
 .course-card .card-body h3 { font-family: var(--font-serif); font-size: 17px; font-weight: 600; margin-bottom: 4px; }
@@ -461,8 +471,8 @@ tr.current-row .sched-wk { color: var(--gold); }
 /* FAB Nav */
 .course-fab {
   position: absolute;
-  left: 16px;
-  bottom: 16px;
+  right: 16px;
+  top: 16px;
   z-index: 70;
 }
 .fab-trigger {
@@ -484,8 +494,8 @@ tr.current-row .sched-wk { color: var(--gold); }
 
 .fab-menu {
   position: absolute;
-  bottom: 58px;
-  left: 0;
+  top: 58px;
+  right: 0;
   background: rgba(10, 18, 37, 0.95);
   backdrop-filter: blur(16px);
   border: 1px solid var(--border-light);
@@ -494,7 +504,7 @@ tr.current-row .sched-wk { color: var(--gold); }
   min-width: 140px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.5);
   opacity: 0;
-  transform: translateY(8px) scale(0.95);
+  transform: translateY(-8px) scale(0.95);
   pointer-events: none;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }

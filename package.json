@@ -19,6 +19,7 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.0",
     "jsonwebtoken": "^9.0.2",
+    "lucide-react": "^1.18.0",
     "openai": "^4.77.0",
     "react-router-dom": "^7.17.0"
   },

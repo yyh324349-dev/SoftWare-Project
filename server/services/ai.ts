@@ -8,6 +8,10 @@ export interface ChatMessage {
   content: string;
 }
 
+export interface ChatOptions {
+  maxTokens?: number;
+}
+
 interface AISettings {
   preferredProvider: string;
   model: string;
@@ -37,15 +41,17 @@ function getAISettings(): AISettings {
 export async function chat(
   systemPrompt: string,
   messages: ChatMessage[],
+  options?: ChatOptions,
 ): Promise<string> {
   const settings = getAISettings();
+  const maxTokens = options?.maxTokens || 4096;
 
   if ((settings.preferredProvider === 'openai' || settings.preferredProvider === 'custom') && settings.openaiKey) {
-    return chatOpenAI(settings.openaiKey, settings.model, systemPrompt, messages, settings.baseURL);
+    return chatOpenAI(settings.openaiKey, settings.model, systemPrompt, messages, settings.baseURL, maxTokens);
   }
 
   if (settings.anthropicKey) {
-    return chatAnthropic(settings.anthropicKey, settings.model, systemPrompt, messages, settings.baseURL);
+    return chatAnthropic(settings.anthropicKey, settings.model, systemPrompt, messages, settings.baseURL, maxTokens);
   }
 
   throw new Error('请先在设置中配置 API Key');
@@ -79,11 +85,12 @@ async function chatAnthropic(
   systemPrompt: string,
   messages: ChatMessage[],
   baseURL?: string,
+  maxTokens: number = 4096,
 ): Promise<string> {
   const client = new Anthropic({ apiKey, baseURL });
   const response = await client.messages.create({
     model,
-    max_tokens: 4096,
+    max_tokens: maxTokens,
     system: systemPrompt,
     messages: messages.map((m) => ({ role: m.role, content: m.content })),
   });
@@ -128,10 +135,12 @@ async function chatOpenAI(
   systemPrompt: string,
   messages: ChatMessage[],
   baseURL?: string,
+  maxTokens: number = 4096,
 ): Promise<string> {
   const client = new OpenAI({ apiKey, baseURL });
   const response = await client.chat.completions.create({
     model,
+    max_tokens: maxTokens,
     messages: [
       { role: 'system', content: systemPrompt },
       ...messages,

@@ -15,6 +15,8 @@ import sandboxRoutes from './routes/sandbox';
 import settingsRoutes from './routes/settings';
 import reportRoutes from './routes/report';
 import certificatesRoutes from './routes/certificates';
+import lectureRoutes from './routes/lecture';
+import reviewRoutes from './routes/review';
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3001;
@@ -40,6 +42,8 @@ app.use('/api/sandbox', sandboxRoutes);       // 沙箱代码执行
 app.use('/api/settings', settingsRoutes);     // 用户设置
 app.use('/api/report', reportRoutes);         // 学习报告
 app.use('/api/certificates', certificatesRoutes); // 证书
+app.use('/api', lectureRoutes);                    // 讲义 /courses/:id/lectures
+app.use('/api', reviewRoutes);                    // AI 评审
 
 // 健康检查
 app.get('/api/health', (_req, res) => {

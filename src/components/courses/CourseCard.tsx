@@ -3,6 +3,7 @@ import type { Course } from '@/types';
 
 interface CourseCardProps {
   course: Course;
+  onDelete?: (courseId: number) => void;
 }
 
 const STYLE_COLORS: Record<string, { bg: string; banner: string }> = {
@@ -16,12 +17,19 @@ const STATUS_TAG_STYLES: Record<string, { bg: string; color: string }> = {
   completed: { bg: 'rgba(245,158,11,0.12)', color: 'var(--warning)' },
 };
 
-export default function CourseCard({ course }: CourseCardProps) {
+export default function CourseCard({ course, onDelete }: CourseCardProps) {
   const navigate = useNavigate();
   const colors = STYLE_COLORS[course.style] || STYLE_COLORS.minimal;
   const tagStyle = STATUS_TAG_STYLES[course.status] || STATUS_TAG_STYLES.active;
   const tagLabel = course.status === 'completed' ? '已结课' : '进行中';
   const isCompleted = course.status === 'completed';
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onDelete) {
+      onDelete(course.id);
+    }
+  };
 
   return (
     <div className="course-card" onClick={() => navigate(`/courses/${course.id}`)}>
@@ -33,6 +41,14 @@ export default function CourseCard({ course }: CourseCardProps) {
             <polyline points="8 6 2 12 8 18" />
           </svg>
         </div>
+        {onDelete && (
+          <button className="card-delete-btn" onClick={handleDelete} title="删除课程">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+            </svg>
+          </button>
+        )}
       </div>
       <div className="card-body">
         <span className="course-tag" style={tagStyle}>{tagLabel}</span>

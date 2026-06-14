@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { get } from '@/lib/api';
+import { get, del } from '@/lib/api';
 import type { Course } from '@/types';
 import CourseCard from './CourseCard';
 
@@ -9,8 +9,9 @@ export default function CoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
-  useEffect(() => {
+  const fetchCourses = () => {
     get<{ courses: Course[] }>('/courses')
       .then((data) => {
         setCourses(data.courses || []);
@@ -20,7 +21,27 @@ export default function CoursesPage() {
         setError(err.message);
         setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    fetchCourses();
   }, []);
+
+  const handleDelete = async (courseId: number) => {
+    if (!confirm('确定要删除这个课程吗？删除后无法恢复。')) {
+      return;
+    }
+
+    setDeletingId(courseId);
+    try {
+      await del(`/courses/${courseId}`);
+      // 从列表中移除
+      setCourses(prev => prev.filter(c => c.id !== courseId));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '删除失败');
+    }
+    setDeletingId(null);
+  };
 
   if (loading) {
     return (
@@ -85,7 +106,11 @@ export default function CoursesPage() {
         )}
 
         {courses.map((course) => (
-          <CourseCard key={course.id} course={course} />
+          <CourseCard
+            key={course.id}
+            course={course}
+            onDelete={handleDelete}
+          />
         ))}
 
         {/* 添加新课程卡片 */}

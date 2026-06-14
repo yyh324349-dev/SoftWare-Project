@@ -5,25 +5,48 @@ import { generateSyllabus } from '../services/generator';
 
 const router = Router();
 
+/** 计算章节完成状态 */
+function calculateChapterCompletion(courseId: number, syllabusId: number): boolean {
+  // 检查讲义进度
+  const lectureProgress = db.prepare(
+    "SELECT status FROM lecture_progress WHERE course_id = ? AND syllabus_id = ? AND status = 'completed'"
+  ).get(courseId, syllabusId);
+
+  // 检查实验完成状态（通过 order_index 关联）
+  const syllabus = db.prepare('SELECT week_number FROM syllabus WHERE id = ?').get(syllabusId) as { week_number: number } | undefined;
+  const labCompleted = syllabus ? db.prepare(
+    "SELECT id FROM labs WHERE course_id = ? AND order_index = ? AND status = 'completed'"
+  ).get(courseId, syllabus.week_number) : null;
+
+  // 如果讲义完成或实验完成，则认为章节完成
+  return !!lectureProgress || !!labCompleted;
+}
+
 // GET /api/courses - 获取所有课程列表
-router.get('/', (_req: AuthRequest, res: Response) => {
+router.get('/', (req: AuthRequest, res: Response) => {
   const courses = db.prepare(`
     SELECT id, title, description, style, format, status, created_at, updated_at
     FROM courses ORDER BY created_at DESC
   `).all() as Array<Record<string, unknown>>;
 
   const result = courses.map((c: Record<string, unknown>) => {
-    // 计算章数和完成进度
-    const syllabusCount = db.prepare(
-      'SELECT COUNT(*) as count FROM syllabus WHERE course_id = ?'
-    ).get(c.id) as { count: number };
+    const courseId = c.id as number;
 
-    const completedCount = db.prepare(
-      "SELECT COUNT(*) as count FROM syllabus WHERE course_id = ? AND status = 'done'"
-    ).get(c.id) as { count: number };
+    // 获取所有章节
+    const syllabusList = db.prepare(
+      'SELECT id FROM syllabus WHERE course_id = ?'
+    ).all(courseId) as Array<{ id: number }>;
 
-    const chapters = syllabusCount.count;
-    const completedChapters = completedCount.count;
+    const chapters = syllabusList.length;
+
+    // 计算已完成章节数
+    let completedChapters = 0;
+    for (const s of syllabusList) {
+      if (calculateChapterCompletion(courseId, s.id)) {
+        completedChapters++;
+      }
+    }
+
     const progress = chapters > 0 ? Math.round((completedChapters / chapters) * 100) : 0;
 
     return {
@@ -59,16 +82,21 @@ router.get('/:id', (req: AuthRequest, res: Response) => {
     return;
   }
 
-  const syllabusCount = db.prepare(
-    'SELECT COUNT(*) as count FROM syllabus WHERE course_id = ?'
-  ).get(id) as { count: number };
+  // 获取所有章节
+  const syllabusList = db.prepare(
+    'SELECT id FROM syllabus WHERE course_id = ?'
+  ).all(courseId) as Array<{ id: number }>;
 
-  const completedCount = db.prepare(
-    "SELECT COUNT(*) as count FROM syllabus WHERE course_id = ? AND status = 'done'"
-  ).get(id) as { count: number };
+  const chapters = syllabusList.length;
 
-  const chapters = syllabusCount.count;
-  const completedChapters = completedCount.count;
+  // 计算已完成章节数
+  let completedChapters = 0;
+  for (const s of syllabusList) {
+    if (calculateChapterCompletion(courseId, s.id)) {
+      completedChapters++;
+    }
+  }
+
   const progress = chapters > 0 ? Math.round((completedChapters / chapters) * 100) : 0;
 
   res.json({

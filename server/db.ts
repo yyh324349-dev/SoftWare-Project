@@ -72,6 +72,28 @@ db.exec(`
     created_at TEXT DEFAULT (datetime('now'))
   );
 
+  -- 5.1 章节小节列表
+  CREATE TABLE IF NOT EXISTS lecture_outlines (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    course_id INTEGER NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+    syllabus_id INTEGER NOT NULL REFERENCES syllabus(id) ON DELETE CASCADE,
+    section_index INTEGER NOT NULL,
+    section_title TEXT NOT NULL,
+    estimated_minutes INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now')),
+    UNIQUE(syllabus_id, section_index)
+  );
+
+  -- 5.2 小节详细内容
+  CREATE TABLE IF NOT EXISTS lecture_section_contents (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    outline_id INTEGER NOT NULL REFERENCES lecture_outlines(id) ON DELETE CASCADE,
+    content TEXT,
+    status TEXT DEFAULT 'not_started',
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  );
+
   -- 6. 聊天对话主题
   CREATE TABLE IF NOT EXISTS topics (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -193,6 +215,8 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_topic_notes_course_id ON topic_notes(course_id);
   CREATE INDEX IF NOT EXISTS idx_learning_sessions_course_id ON learning_sessions(course_id);
   CREATE INDEX IF NOT EXISTS idx_lecture_progress_course_syllabus ON lecture_progress(course_id, syllabus_id);
+  CREATE INDEX IF NOT EXISTS idx_lecture_outlines_syllabus ON lecture_outlines(syllabus_id);
+  CREATE INDEX IF NOT EXISTS idx_lecture_section_contents_outline ON lecture_section_contents(outline_id);
 `);
 
 // 初始化 settings 单例行（如果不存在）
@@ -211,6 +235,27 @@ try {
 // 迁移：为 certificates 表添加 grade 列（如果不存在）
 try {
   db.exec('ALTER TABLE certificates ADD COLUMN grade TEXT DEFAULT \'\'');
+} catch {
+  // 列已存在，忽略
+}
+
+// 迁移：为 labs 表添加 status 列（如果不存在）
+try {
+  db.exec("ALTER TABLE labs ADD COLUMN status TEXT DEFAULT 'not_started'");
+} catch {
+  // 列已存在，忽略
+}
+
+// 迁移：为 topic_notes 表添加 source 列（标记来源：ai 或 user）
+try {
+  db.exec("ALTER TABLE topic_notes ADD COLUMN source TEXT DEFAULT 'user'");
+} catch {
+  // 列已存在，忽略
+}
+
+// 迁移：为 projects 表添加 order_index 列（关联周次）
+try {
+  db.exec("ALTER TABLE projects ADD COLUMN order_index INTEGER DEFAULT 0");
 } catch {
   // 列已存在，忽略
 }

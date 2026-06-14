@@ -6,7 +6,7 @@ import { generateSyllabus } from '../services/generator';
 const router = Router();
 
 // GET /api/courses/:courseId/syllabus - 获取课程大纲
-router.get('/:courseId/syllabus', (req: AuthRequest, res: Response) => {
+router.get('/courses/:courseId/syllabus', (req: AuthRequest, res: Response) => {
   const { courseId } = req.params;
   const id = Number(courseId);
   if (!Number.isInteger(id) || id <= 0) {
@@ -62,7 +62,7 @@ router.get('/:courseId/syllabus', (req: AuthRequest, res: Response) => {
 });
 
 // POST /api/courses/:courseId/syllabus/refresh - 重新生成大纲
-router.post('/:courseId/syllabus/refresh', async (req: AuthRequest, res: Response) => {
+router.post('/courses/:courseId/syllabus/refresh', async (req: AuthRequest, res: Response) => {
   const { courseId } = req.params;
   const id = Number(courseId);
   if (!Number.isInteger(id) || id <= 0) {
