@@ -1,0 +1,15 @@
+/* ============================================================
+   AppShell Layout Styles
+   ============================================================ */
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ---- Main Content ---- */
+.main-content {
+  flex: 1;
+  min-height: 100vh;
+  background: var(--bg-primary);
+}

@@ -1,0 +1,469 @@
+/* ============================================================
+   LectureTab - 课程讲义（章节折叠式）
+   ============================================================ */
+
+.lecture-container {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ---- 左侧边栏 ---- */
+
+.lecture-sidebar {
+  width: 300px;
+  min-width: 300px;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.lecture-sidebar-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.lecture-sidebar-header h3 {
+  font-family: var(--font-serif);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.lecture-chapter-count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-tertiary);
+  background: var(--bg-tertiary);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.lecture-chapter-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+/* ---- 章节 ---- */
+
+.lecture-chapter {
+  margin-bottom: 4px;
+}
+
+.lecture-chapter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: all var(--transition-fast);
+}
+
+.lecture-chapter-header:hover {
+  background: var(--bg-glass);
+}
+
+.lecture-chapter-header.expanded {
+  background: var(--bg-glass-strong);
+}
+
+.chapter-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chapter-number {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-tertiary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.chapter-topic {
+  font-size: 13px;
+  color: var(--text-primary);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.chapter-arrow {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  transition: transform var(--transition-fast);
+}
+
+/* ---- 小节列表 ---- */
+
+.lecture-sections-list {
+  padding: 4px 0 4px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lecture-section-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: all var(--transition-fast);
+}
+
+.lecture-section-item:hover {
+  background: var(--bg-glass);
+}
+
+.lecture-section-item.active {
+  background: var(--gold-glow);
+  border-left: 2px solid var(--gold);
+}
+
+.status-icon {
+  font-size: 12px;
+  width: 16px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.status-icon.completed {
+  color: var(--jade);
+}
+
+.status-icon.in-progress {
+  color: var(--accent-blue);
+}
+
+.status-icon.not-started {
+  color: var(--text-tertiary);
+}
+
+.section-title {
+  font-size: 13px;
+  color: var(--text-secondary);
+  flex: 1;
+  line-height: 1.4;
+}
+
+.lecture-section-item.active .section-title {
+  color: var(--text-primary);
+}
+
+.section-time {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.generate-outline-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  margin: 4px 0;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border-light);
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--gold);
+  transition: all var(--transition-fast);
+}
+
+.generate-outline-btn:hover {
+  background: var(--gold-glow);
+  border-color: var(--gold);
+}
+
+.generate-outline-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 小节行（包含重新生成按钮） */
+.lecture-section-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.lecture-section-row .lecture-section-item {
+  flex: 1;
+}
+
+.regenerate-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all var(--transition-fast);
+}
+
+.lecture-section-row:hover .regenerate-btn {
+  opacity: 0.6;
+}
+
+.regenerate-btn:hover {
+  opacity: 1 !important;
+  background: var(--bg-glass-strong);
+}
+
+.regenerate-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ---- 右侧内容区 ---- */
+
+.lecture-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px;
+  background: var(--bg-primary);
+}
+
+.lecture-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-tertiary);
+  font-size: 14px;
+}
+
+.lecture-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-tertiary);
+}
+
+.lecture-empty-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+.lecture-empty-text {
+  font-size: 15px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.lecture-empty-hint {
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+.lecture-error {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  color: var(--danger);
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.lecture-error button {
+  background: none;
+  border: none;
+  color: var(--danger);
+  cursor: pointer;
+  font-size: 14px;
+  opacity: 0.7;
+  transition: opacity var(--transition-fast);
+}
+
+.lecture-error button:hover {
+  opacity: 1;
+}
+
+/* ---- 生成页面 ---- */
+
+.lecture-generate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.lecture-generate-icon {
+  font-size: 3rem;
+  margin-bottom: 20px;
+  opacity: 0.8;
+}
+
+.lecture-generate h3 {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.lecture-generate p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+
+.generate-time {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-tertiary) !important;
+  margin-bottom: 20px !important;
+}
+
+/* ---- 讲义查看器 ---- */
+
+.lecture-viewer {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.lecture-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.lecture-header h2 {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 8px;
+}
+
+.lecture-meta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.lecture-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.completed-badge {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--jade);
+  background: var(--jade-glow);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+}
+
+/* ---- 内容 iframe ---- */
+
+.lecture-iframe-wrapper {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.lecture-iframe {
+  width: 100%;
+  min-height: 600px;
+  height: calc(100vh - 200px);
+  border: none;
+  background: var(--bg-primary);
+}
+
+/* ---- 按钮 ---- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: none;
+}
+
+.btn-primary {
+  background: var(--gold);
+  color: var(--bg-deep);
+}
+
+.btn-primary:hover {
+  background: var(--gold-light);
+  box-shadow: var(--shadow-gold);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-secondary {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+  background: var(--bg-glass-strong);
+  border-color: var(--border-light);
+}

@@ -4,7 +4,7 @@
 
 - **仓库**: [SoftWare-Project](https://github.com/LilZeeCN/SoftWare-Project)
 - **团队**: 3 人
-- **技术栈**: Express + React + TypeScript + SQLite + Tailwind CSS
+- **技术栈**: Express + React + TypeScript + SQLite
 - **AI 辅助**: 允许使用 AI（Claude / ChatGPT 等）辅助开发
 
 ---
@@ -140,7 +140,7 @@ style: 调整 Lab Workspace 终端面板高度
 2. **频繁同步**: 每天开始工作前 `git pull origin main`
 3. **小步提交**: 不要攒一大堆改动再提交，完成一个小功能就提交
 4. **共享文件约定**:
-   - `src/app/globals.css` — 新增样式追加到文件末尾，不要改别人的样式
+   - `src/globals.css` — 新增样式追加到文件末尾，不要改别人的样式
    - `src/types/index.ts` — 新增类型追加到文件末尾
    - `src/lib/` 下的工具函数 — 新建文件，不修改已有文件
    - `server/routes/` — 每个路由独立文件，不存在冲突

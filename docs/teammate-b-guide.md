@@ -292,7 +292,7 @@ curl -X POST http://localhost:3001/api/courses \
 
 ---
 
-### 任务 4：课程详情 — 大纲 Tab
+### 任务 4：课程详情 — 大纲 Tab（OutlineTab）
 
 **开始时间**：Zee 完成 AI 内容生成（任务 ⑥）后
 
@@ -302,12 +302,11 @@ curl -X POST http://localhost:3001/api/courses \
 
 | 文件 | 说明 |
 |------|------|
-| `src/components/course-detail/CourseDetailLayout.tsx` | 课程详情框架（Tab 切换 + FAB 导航） |
 | `src/components/course-detail/outline/OutlineTab.tsx` | 大纲表格 |
 
-**注意**：`CourseDetailLayout.tsx` 是你和队友 C 共用的框架组件，**你必须先写好这个组件**，队友 C 的所有 Tab 才能挂载上去。
+> **注意**：`CourseDetailLayout.tsx`（课程详情框架，Tab 切换 + FAB 导航）由 **Zee** 负责编写并提供。你只需要专注于 `OutlineTab.tsx` 大纲表格组件。你的 OutlineTab 会作为子组件挂载在 CourseDetailLayout 的 Tab 内容区中。
 
-**CourseDetailLayout 功能**：
+**CourseDetailLayout 功能**（由 Zee 提供，供参考）：
 - 顶部：课程名称 + Tab 切换栏（大纲 / 笔记 / 实验 / 对话 / 项目）
 - 右下角：FAB 浮动导航按钮（点击展开菜单）
 - 内容区：根据当前 Tab 渲染对应组件
